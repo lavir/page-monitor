@@ -1,11 +1,14 @@
 __author__ = 'ned'
 
+import os
 import time
 import hashlib
 import requests
 from urlparse import urlparse
 from datetime import datetime
 from models import Url, Page, session
+
+CWD = os.getcwd()
 
 def get_page(url):
   user_agent = {"User-agent": "Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1; .NET CLR 2.0.50727; .NET CLR 3.0.04506.30)"}
@@ -19,35 +22,44 @@ def get_page(url):
   if stored_md5 == 'page not found':
     #if we dont have the url in our db, create new url/page objects
     print '%s not found. Adding to database' %url
+    checkdir, filename = write_page(downloaded_page.content, domain, url_page)
+    dirpath = '%s/%s' %(checkdir, filename)
     url2db = Url(url=url)
-    page2db = Page(page_md5=downloaded_page_md5, page_result=url2db)
+    page2db = Page(page_md5=downloaded_page_md5, filename=dirpath, page_result=url2db)
     session.add(page2db)
     session.commit()
-    write_page(downloaded_page.content, domain, url_page)
   elif downloaded_page_md5 == stored_md5[2]:
     #our page has not been updated, kick back and relax
     print '%s has not been updated. Exiting.' %url
   else:
     #our page has been updated, update the page_md5 entry in the page object
     print '%s has been updated. New md5 %s' %(url, downloaded_page_md5)
+    checkdir, filename = write_page(downloaded_page.content, domain, url_page)
+    dirpath = '%s/%s' %(checkdir, filename)
     url2db = session.query(Url).filter(Url.id == stored_md5[0]).one()
-    page2db = Page(page_md5=downloaded_page_md5, page_result=url2db)
+    page2db = Page(page_md5=downloaded_page_md5, filename=dirpath, page_result=url2db)
     session.commit()
-    write_page(downloaded_page.content, domain, url_page)
   return
 
 def write_page(download_page, domain, file):
   ts = datetime.strftime(datetime.utcnow(), '%Y-%m-%d_%H%M%S')
   if '/' in file:
-    file = file.replace('/', '_')
-    if file == '_':
-      file = '%s_%s_index.html' %(ts, domain)
+    filename = file.replace('/', '_')
+    if filename == '_':
+      filename = '%s_%s_index.html' %(ts, domain)
     else:
-      file = '%s_%s_%s' %(ts, domain, file)
-  outfile = open(file, 'w+')
+      filename = '%s_%s_%s' %(ts, domain, filename)
+  if filename[-1:] == '_':
+    filename = filename[:-1]
+  checkdir = '%s/%s' %(CWD, domain)
+  if os.path.isdir(checkdir) is False:
+    os.mkdir(checkdir)
+  print checkdir
+  os.chdir(checkdir)
+  outfile = open(filename, 'w+')
   outfile.write(download_page)
   outfile.close()
-  return
+  return checkdir, filename
 
 def queryDB(url):
   try:
@@ -58,6 +70,7 @@ def queryDB(url):
 
 def get_urls():
   urls = []
+  os.chdir(CWD)
   with open('url.lst') as url:
     for u in url.readlines():
       urls.append(u.strip())

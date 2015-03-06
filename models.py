@@ -23,6 +23,7 @@ class Page(Base):
   id = Column(Integer, primary_key=True, nullable=False, unique=True)
   timestamp = Column(DateTime, default=datetime.utcnow)
   page_md5 = Column(String, nullable=False)
+  filename = Column(String, nullable=False)
 
   url_id = Column(Integer, ForeignKey('urls.id'), nullable=False)
 
