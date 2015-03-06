@@ -1,6 +1,7 @@
 __author__ = 'ned'
 
 import os
+import time
 import hashlib
 import requests
 from urlparse import urlparse
@@ -40,16 +41,13 @@ def get_page(url):
 
   return
 
-def write_page(download_page, directory, file):
+def write_page(download_page, domain, file):
   ts = datetime.strftime(datetime.utcnow(), '%Y-%m-%d_%H%M%S')
-  outdir = './%s' %directory
-  if os.path.isdir(outdir) is False:
-    os.mkdir(outdir)
-  os.chdir(directory)
   if file == '/':
-    file = '%s_index.html' %ts
+    file = '%s_%s_index.html' %(ts, domain)
   else:
-    file = '%s_%s' %(ts, file)
+    file = file.lstrip('/')
+    file = '%s_%s_%s' %(ts, domain, file)
 
   outfile = open(file, 'w+')
   outfile.write(download_page)
