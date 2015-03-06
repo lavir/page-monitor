@@ -18,6 +18,8 @@ def get_page(url):
   downloaded_page = requests.get(url, headers=user_agent)
   downloaded_page_md5 = hashlib.md5(downloaded_page.content).hexdigest()
   stored_md5 = queryDB(url)
+  url2db = stored_md5[0]
+  page_md5 = stored_md5[2]
 
   if stored_md5 == 'page not found':
     #if we dont have the url in our db, create new url/page objects
@@ -28,7 +30,7 @@ def get_page(url):
     page2db = Page(page_md5=downloaded_page_md5, filename=dirpath, page_result=url2db)
     session.add(page2db)
     session.commit()
-  elif downloaded_page_md5 == stored_md5[2]:
+  elif downloaded_page_md5 == page_md5.page_md5:
     #our page has not been updated, kick back and relax
     print '%s has not been updated. Exiting.' %url
   else:
@@ -36,7 +38,6 @@ def get_page(url):
     print '%s has been updated. New md5 %s' %(url, downloaded_page_md5)
     checkdir, filename = write_page(downloaded_page.content, domain, url_page)
     dirpath = '%s/%s' %(checkdir, filename)
-    url2db = session.query(Url).filter(Url.id == stored_md5[0]).one()
     page2db = Page(page_md5=downloaded_page_md5, filename=dirpath, page_result=url2db)
     session.commit()
   return
@@ -64,7 +65,7 @@ def write_page(download_page, domain, file):
 def queryDB(url):
   try:
     #return url.id, url, page_md5
-    return (session.query(Url.id).filter(Url.url == url).first()[0], url, session.query(Page.page_md5).filter(Page.url_id == session.query(Url.id).filter(Url.url == url)).first()[0])
+    return (session.query(Url).filter(Url.url == url).first(), url, session.query(Page).filter(Page.url_id == session.query(Url.id).filter(Url.url == url)).first())
   except TypeError as error:
     return 'page not found'
 
