@@ -71,8 +71,10 @@ def get_urls():
   return urls
 
 def main():
-  for url in get_urls():
-    get_page(url)
+  while True:
+    for url in get_urls():
+      get_page(url)
+    time.sleep(1800)
 
 
 if __name__ == '__main__':
