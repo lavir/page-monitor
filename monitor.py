@@ -17,8 +17,13 @@ def get_page(url):
   url_page = full_path.path
   if url_page == '':
     url_page = 'index.html'
-  downloaded_page = requests.get(url, headers=user_agent)
-  downloaded_page_md5 = hashlib.md5(downloaded_page.content).hexdigest()
+  try:
+    downloaded_page = requests.get(url, headers=user_agent)
+    downloaded_page_md5 = hashlib.md5(downloaded_page.content).hexdigest()
+  except requests.exceptions.ConnectionError as error:
+    print '%s is unavailable. %s received' %(url, error)
+    return
+
   stored_md5 = queryDB(url)
 
   url2db = stored_md5[0]
