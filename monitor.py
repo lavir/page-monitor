@@ -15,13 +15,14 @@ def get_page(url):
   full_path = urlparse(url)
   domain = full_path.netloc
   url_page = full_path.path
+  if url_page == '':
+    url_page = 'index.html'
   downloaded_page = requests.get(url, headers=user_agent)
   downloaded_page_md5 = hashlib.md5(downloaded_page.content).hexdigest()
   stored_md5 = queryDB(url)
 
   url2db = stored_md5[0]
   page_md5 = stored_md5[2]
-
   if stored_md5 == 'page not found' or stored_md5[0] == None:
     #if we dont have the url in our db, create new url/page objects
     print '%s not found. Adding to database' %url
@@ -51,6 +52,8 @@ def write_page(download_page, domain, file):
       filename = '%s_%s_index.html' %(ts, domain)
     else:
       filename = '%s_%s_%s' %(ts, domain, filename)
+  else:
+    filename = 'index.html'
   if filename[-1:] == '_':
     filename = filename[:-1]
   checkdir = '%s/%s' %(CWD, domain)
