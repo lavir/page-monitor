@@ -58,7 +58,7 @@ def write_page(download_page, domain, file):
     else:
       filename = '%s_%s_%s' %(ts, domain, filename)
   else:
-    filename = 'index.html'
+    filename = '%s_index.html' %ts
   if filename[-1:] == '_':
     filename = filename[:-1]
   checkdir = '%s/%s' %(CWD, domain)
