@@ -20,8 +20,8 @@ def get_page(url):
   try:
     downloaded_page = requests.get(url, headers=user_agent)
     downloaded_page_md5 = hashlib.md5(downloaded_page.content).hexdigest()
-  except requests.exceptions.ConnectionError as error:
-    print '%s is unavailable. %s received' %(url, error)
+  except Exception, e:
+    print '%s is unavailable. %s eror received' %(url, e)
     return
 
   stored_md5 = queryDB(url)
