@@ -18,10 +18,11 @@ def get_page(url):
   downloaded_page = requests.get(url, headers=user_agent)
   downloaded_page_md5 = hashlib.md5(downloaded_page.content).hexdigest()
   stored_md5 = queryDB(url)
+
   url2db = stored_md5[0]
   page_md5 = stored_md5[2]
 
-  if stored_md5 == 'page not found':
+  if stored_md5 == 'page not found' or stored_md5[0] == None:
     #if we dont have the url in our db, create new url/page objects
     print '%s not found. Adding to database' %url
     checkdir, filename = write_page(downloaded_page.content, domain, url_page)
@@ -55,7 +56,6 @@ def write_page(download_page, domain, file):
   checkdir = '%s/%s' %(CWD, domain)
   if os.path.isdir(checkdir) is False:
     os.mkdir(checkdir)
-  print checkdir
   os.chdir(checkdir)
   outfile = open(filename, 'w+')
   outfile.write(download_page)
